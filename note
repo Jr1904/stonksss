@@ -1,0 +1,30 @@
+<option value="TH practice">TH practice - RM8</option>
+<option value="TH exam">TH exam - RM8.50</option>
+<option value="Circuit">Circuit - RM5</option>
+<option value="Breadboard">Breadboard - RM5</option>
+<option value="SMD practice">SMD practice - RM2.50</option>
+<option value="SMD exam">SMD exam - RM3.50</option>
+<option value="Cutter">Cutter - RM10</option>
+<option value="Plier">Plier - RM10</option>
+<option value="Perf 5x7">Perf 5x7 - RM2</option>
+<option value="Perf 7x9">Perf 7x9 - RM3</option>
+<option value="Solder">Solder - RM3</option>
+<option value="Log book">Log book - RM1.60</option>
+<option value="Tweezer">Tweezer - RM4</option>
+<option value="Acrylic">Acrylic - RM7</option>
+<option value="Arduino Pro Micro">Arduino Pro Micro - RM30</option>
+<option value="Soldering Lead">Soldering Lead - RM3</option>
+<option value="Keyboard Badge">Keyboard Badge - RM8</option>
+<option value="Resistors">Resistors - RM2</option>
+<option value="Key Cap">Key Cap - RM1</option>
+<option value="Screws and Golden nut">Screws and Golden nut - RM1</option>
+<option value="Switches">Switches - RM0.50</option>
+<!--<option value="22 Additional Item 5">22 Additional Item 5</option>-->
+
+apiKey: "AIzaSyCemzu_stNmHaHfGHzmi_59k0XGT4ivEy4",
+            authDomain: "badgeselling-e5a2d.firebaseapp.com",
+            databaseURL: "https://badgeselling-e5a2d-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "badgeselling-e5a2d",
+            storageBucket: "badgeselling-e5a2d.appspot.com",
+            messagingSenderId: "80085468094",
+            appId: "1:80085468094:web:009245082abb6d95b06fef",

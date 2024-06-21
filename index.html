@@ -6,9 +6,6 @@
     <title>Badge Selling Record</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
 </head>
 <body>
     <div class="container">
@@ -37,12 +34,10 @@
                 <option value="Arduino Pro Micro">Arduino Pro Micro - RM30</option>
                 <option value="Soldering Lead">Soldering Lead - RM3</option>
                 <option value="Keyboard Badge">Keyboard Badge - RM8</option>
-                <!-- Additional slots -->
                 <option value="Resistors">Resistors - RM2</option>
                 <option value="Key Cap">Key Cap - RM1</option>
                 <option value="Screws and Golden nut">Screws and Golden nut - RM1</option>
                 <option value="Switches">Switches - RM0.50</option>
-                <option value="22 Additional Item 5">22 Additional Item 5</option>
             </select>
         </div>
         <div class="form-group">
@@ -58,6 +53,7 @@
                     <th>Date</th>
                     <th>Item</th>
                     <th>Quantity</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -65,6 +61,122 @@
             </tbody>
         </table>
     </div>
-    <script src="script.js"></script>
-</body>
-</html>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCemzu_stNmHaHfGHzmi_59k0XGT4ivEy4",
+            authDomain: "badgeselling-e5a2d.firebaseapp.com",
+            databaseURL: "https://badgeselling-e5a2d-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "badgeselling-e5a2d",
+            storageBucket: "badgeselling-e5a2d.appspot.com",
+            messagingSenderId: "80085468094",
+            appId: "1:80085468094:web:009245082abb6d95b06fef",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const dateInput = document.getElementById('date');
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+    });
+
+    window.addSale = function() {
+        const date = document.getElementById('date').value;
+        const item = document.getElementById('item').value;
+        const quantity = parseInt(document.getElementById('quantity').value);
+
+        if (!date || !item || isNaN(quantity) || quantity <= 0) {
+            alert('Please select a date, item, and valid quantity.');
+            return;
+        }
+
+        const salesRef = ref(database, 'salesRecords');
+        onValue(salesRef, (snapshot) => {
+            let recordFound = false;
+            const records = snapshot.val();
+
+            if (records) {
+                Object.entries(records).forEach(([id, record]) => {
+                    if (record.date === date && record.item === item) {
+                        recordFound = true;
+                        const updatedQuantity = record.quantity + quantity;
+                        update(ref(database, 'salesRecords/' + id), { quantity: updatedQuantity });
+                    }
+                });
+            }
+
+            if (!recordFound) {
+                const newSaleRef = push(salesRef);
+                set(newSaleRef, { date, item, quantity });
+            }
+        }, { onlyOnce: true });
+
+        // Reset date to current date
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').value = today;
+
+        document.getElementById('item').value = '';
+        document.getElementById('quantity').value = 1;
+
+        displaySales();
+    };
+
+    function displaySales() {
+        const salesTableBody = document.querySelector('#salesTable tbody');
+        salesTableBody.innerHTML = '';
+
+        const salesRef = ref(database, 'salesRecords');
+        onValue(salesRef, (snapshot) => {
+            const records = snapshot.val();
+            if (records) {
+                const groupedRecords = {};
+                Object.entries(records).forEach(([id, record]) => {
+                    const key = `${record.date}_${record.item}`;
+                    if (!groupedRecords[key]) {
+                        groupedRecords[key] = { date: record.date, item: record.item, quantity: 0, id: id };
+                    }
+                    groupedRecords[key].quantity += record.quantity;
+                });
+
+                const sortedRecords = Object.values(groupedRecords).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                let lastDate = '';
+                sortedRecords.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${record.date === lastDate ? '' : record.date}</td>
+                        <td>${record.item}</td>
+                        <td contenteditable="true" onblur="updateQuantity('${record.id}', this)">${record.quantity}</td>
+                        <td><button onclick="removeSale('${record.id}')">Remove</button></td>
+                    `;
+                    if (record.date !== lastDate) {
+                        row.style.borderTop = '2px solid #333';
+                    }
+                    lastDate = record.date;
+                    salesTableBody.appendChild(row);
+                });
+            }
+        });
+    }
+
+    window.updateQuantity = function(id, element) {
+        const newQuantity = parseInt(element.innerText);
+        if (!isNaN(newQuantity) && newQuantity > 0) {
+            update(ref(database, 'salesRecords/' + id), { quantity: newQuantity });
+        } else {
+            alert('Please enter a valid quantity.');
+            displaySales();
+        }
+    };
+
+    window.removeSale = function(id) {
+        remove(ref(database, 'salesRecords/' + id));
+        displaySales();
+    };
+
+    displaySales();
+</script>
