@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badge Selling Record</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Badge Selling Record</h1>
+        <div class="form-group">
+            <label for="date">Set Date:</label>
+            <input type="date" id="date">
+        </div>
+        <div class="form-group">
+            <label for="item">Select Item:</label>
+            <select id="item">
+                <option value="TH practice">TH practice - RM8</option>
+                <option value="TH exam">TH exam - RM8.50</option>
+                <option value="Circuit">Circuit - RM5</option>
+                <option value="Breadboard">Breadboard - RM5</option>
+                <option value="SMD practice">SMD practice - RM2.50</option>
+                <option value="SMD exam">SMD exam - RM3.50</option>
+                <option value="Cutter">Cutter - RM10</option>
+                <option value="Plier">Plier - RM10</option>
+                <option value="Perf 5x7">Perf 5x7 - RM2</option>
+                <option value="Perf 7x9">Perf 7x9 - RM3</option>
+                <option value="Solder">Solder - RM3</option>
+                <option value="Log book">Log book - RM1.60</option>
+                <option value="Tweezer">Tweezer - RM4</option>
+                <option value="Acrylic">Acrylic - RM7</option>
+                <option value="Arduino Pro Micro">Arduino Pro Micro - RM30</option>
+                <option value="Soldering Lead">Soldering Lead - RM3</option>
+                <option value="Keyboard Badge">Keyboard Badge - RM8</option>
+                <!-- Additional slots -->
+                <option value="Resistors">Resistors - RM2</option>
+                <option value="Key Cap">Key Cap - RM1</option>
+                <option value="Screws and Golden nut">Screws and Golden nut - RM1</option>
+                <option value="Switches">Switches - RM0.50</option>
+                <option value="22 Additional Item 5">22 Additional Item 5</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" min="1" value="1">
+        </div>
+        <button onclick="addSale()">Add Sale</button>
+
+        <h2>Recorded Sales</h2>
+        <table id="salesTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Sales records will appear here -->
+            </tbody>
+        </table>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
