@@ -61,122 +61,127 @@
             </tbody>
         </table>
     </div>
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCemzu_stNmHaHfGHzmi_59k0XGT4ivEy4",
+        const firebaseConfig = {
+            apiKey: "AIzaSyCemzu_stNmHaHfGHzmi_59k0XGT4ivEy4",
             authDomain: "badgeselling-e5a2d.firebaseapp.com",
             databaseURL: "https://badgeselling-e5a2d-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "badgeselling-e5a2d",
             storageBucket: "badgeselling-e5a2d.appspot.com",
             messagingSenderId: "80085468094",
             appId: "1:80085468094:web:009245082abb6d95b06fef",
-    };
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-    document.addEventListener('DOMContentLoaded', (event) => {
-        const dateInput = document.getElementById('date');
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.value = today;
-    });
-
-    window.addSale = function() {
-        const date = document.getElementById('date').value;
-        const item = document.getElementById('item').value;
-        const quantity = parseInt(document.getElementById('quantity').value);
-
-        if (!date || !item || isNaN(quantity) || quantity <= 0) {
-            alert('Please select a date, item, and valid quantity.');
-            return;
-        }
-
-        const salesRef = ref(database, 'salesRecords');
-        onValue(salesRef, (snapshot) => {
-            let recordFound = false;
-            const records = snapshot.val();
-
-            if (records) {
-                Object.entries(records).forEach(([id, record]) => {
-                    if (record.date === date && record.item === item) {
-                        recordFound = true;
-                        const updatedQuantity = record.quantity + quantity;
-                        update(ref(database, 'salesRecords/' + id), { quantity: updatedQuantity });
-                    }
-                });
-            }
-
-            if (!recordFound) {
-                const newSaleRef = push(salesRef);
-                set(newSaleRef, { date, item, quantity });
-            }
-        }, { onlyOnce: true });
-
-        // Reset date to current date
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('date').value = today;
-
-        document.getElementById('item').value = '';
-        document.getElementById('quantity').value = 1;
-
-        displaySales();
-    };
-
-    function displaySales() {
-        const salesTableBody = document.querySelector('#salesTable tbody');
-        salesTableBody.innerHTML = '';
-
-        const salesRef = ref(database, 'salesRecords');
-        onValue(salesRef, (snapshot) => {
-            const records = snapshot.val();
-            if (records) {
-                const groupedRecords = {};
-                Object.entries(records).forEach(([id, record]) => {
-                    const key = `${record.date}_${record.item}`;
-                    if (!groupedRecords[key]) {
-                        groupedRecords[key] = { date: record.date, item: record.item, quantity: 0, id: id };
-                    }
-                    groupedRecords[key].quantity += record.quantity;
-                });
-
-                const sortedRecords = Object.values(groupedRecords).sort((a, b) => new Date(a.date) - new Date(b.date));
-
-                let lastDate = '';
-                sortedRecords.forEach(record => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${record.date === lastDate ? '' : record.date}</td>
-                        <td>${record.item}</td>
-                        <td contenteditable="true" onblur="updateQuantity('${record.id}', this)">${record.quantity}</td>
-                        <td><button onclick="removeSale('${record.id}')">Remove</button></td>
-                    `;
-                    if (record.date !== lastDate) {
-                        row.style.borderTop = '2px solid #333';
-                    }
-                    lastDate = record.date;
-                    salesTableBody.appendChild(row);
-                });
-            }
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const dateInput = document.getElementById('date');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
         });
-    }
 
-    window.updateQuantity = function(id, element) {
-        const newQuantity = parseInt(element.innerText);
-        if (!isNaN(newQuantity) && newQuantity > 0) {
-            update(ref(database, 'salesRecords/' + id), { quantity: newQuantity });
-        } else {
-            alert('Please enter a valid quantity.');
+        window.addSale = function() {
+            const date = document.getElementById('date').value;
+            const item = document.getElementById('item').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+
+            if (!date || !item || isNaN(quantity) || quantity <= 0) {
+                alert('Please select a date, item, and valid quantity.');
+                return;
+            }
+
+            const salesRef = ref(database, 'salesRecords');
+            onValue(salesRef, (snapshot) => {
+                let recordFound = false;
+                const records = snapshot.val();
+
+                if (records) {
+                    Object.entries(records).forEach(([id, record]) => {
+                        if (record.date === date && record.item === item) {
+                            recordFound = true;
+                            const updatedQuantity = record.quantity + quantity;
+                            update(ref(database, 'salesRecords/' + id), { quantity: updatedQuantity });
+                        }
+                    });
+                }
+
+                if (!recordFound) {
+                    const newSaleRef = push(salesRef);
+                    set(newSaleRef, { date, item, quantity });
+                }
+            }, { onlyOnce: true });
+
+            // Reset date to current date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+
+            document.getElementById('item').value = '';
+            document.getElementById('quantity').value = 1;
+
             displaySales();
+        };
+
+        function displaySales() {
+            const salesTableBody = document.querySelector('#salesTable tbody');
+            salesTableBody.innerHTML = '';
+
+            const salesRef = ref(database, 'salesRecords');
+            onValue(salesRef, (snapshot) => {
+                const records = snapshot.val();
+                if (records) {
+                    const groupedRecords = {};
+                    Object.entries(records).forEach(([id, record]) => {
+                        const key = `${record.date}_${record.item}`;
+                        if (!groupedRecords[key]) {
+                            groupedRecords[key] = { date: record.date, item: record.item, quantity: 0, id: id };
+                        }
+                        groupedRecords[key].quantity += record.quantity;
+                    });
+
+                    const sortedRecords = Object.values(groupedRecords).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                    let lastDate = '';
+                    sortedRecords.forEach(record => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${record.date === lastDate ? '' : record.date}</td>
+                            <td>${record.item}</td>
+                            <td>${record.quantity}</td>
+                            <td>
+                                <button onclick="updateSale('${record.id}', 1)">+</button>
+                                <button onclick="updateSale('${record.id}', -1)">-</button>
+                            </td>
+                        `;
+                        if (record.date !== lastDate) {
+                            row.style.borderTop = '2px solid #333';
+                        }
+                        lastDate = record.date;
+                        salesTableBody.appendChild(row);
+                    });
+                }
+            });
         }
-    };
 
-    window.removeSale = function(id) {
-        remove(ref(database, 'salesRecords/' + id));
+        window.updateSale = function(id, delta) {
+            const salesRef = ref(database, 'salesRecords/' + id);
+            onValue(salesRef, (snapshot) => {
+                const record = snapshot.val();
+                if (record) {
+                    const newQuantity = record.quantity + delta;
+                    if (newQuantity > 0) {
+                        update(salesRef, { quantity: newQuantity });
+                    } else {
+                        remove(salesRef);
+                    }
+                    displaySales();
+                }
+            }, { onlyOnce: true });
+        };
+
         displaySales();
-    };
-
-    displaySales();
-</script>
+    </script>

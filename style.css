@@ -100,14 +100,8 @@ tr:hover {
     background-color: #e0e0e0;
 }
 
-td[contenteditable="true"] {
-    background-color: #fff3cd;
-    min-width: 50px; /* Ensures the cell width does not collapse */
-    padding: 5px;
-}
-
 td button {
-    background-color: #ff4c4c;
+    background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 3px;
@@ -116,30 +110,13 @@ td button {
 }
 
 td button:hover {
-    background-color: #ff1c1c;
+    background-color: #45a049;
 }
 
-tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
-
-tr:hover {
-    background-color: #e0e0e0;
-}
-
-td[contenteditable="true"] {
-    background-color: #fff3cd;
-}
-
-td button {
+td button:nth-child(2) {
     background-color: #ff4c4c;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    padding: 5px 10px;
 }
 
-td button:hover {
+td button:nth-child(2):hover {
     background-color: #ff1c1c;
 }
