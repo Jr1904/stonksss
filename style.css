@@ -123,3 +123,10 @@ td button:nth-child(2) {
 td button:nth-child(2):hover {
     background-color: #ff1c1c;
 }
+
+.date-row {
+    font-weight: bold;
+    background-color: #f0f0f0;
+    text-align: center;
+    border-bottom: 2px solid #ccc;
+}
