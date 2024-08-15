@@ -17,28 +17,28 @@
         <div class="form-group">
             <label for="item">Select Item:</label>
             <select id="item">
-                <option value="TH practice">TH practice - RM8</option>
-                <option value="TH exam">TH exam - RM8.50</option>
-                <option value="Circuit">Circuit - RM5</option>
-                <option value="Breadboard">Breadboard - RM10</option>
-                <option value="SMD practice">SMD practice - RM2.50</option>
-                <option value="SMD exam">SMD exam - RM3.50</option>
-                <option value="Cutter">Cutter - RM10</option>
-                <option value="Plier">Plier - RM10</option>
-                <option value="Perf 5x7">Perf 5x7 - RM2</option>
-                <option value="Perf 7x9">Perf 7x9 - RM3</option>
-                <option value="Exam Pack 2">Exam Pack 2 - RM3.50</option>
-                <option value="Log book">Log book - RM1.60</option>
-                <option value="Tweezer">Tweezer - RM4</option>
-                <option value="Acrylic">Acrylic - RM7</option>
-                <option value="Arduino Pro Micro">Arduino Pro Micro - RM20</option>
-                <option value="Soldering Lead">Soldering Lead - RM3</option>
-                <option value="Keyboard Badge">Keyboard Badge - RM8</option>
-                <option value="Resistors">Resistors - RM2</option>
-                <option value="Key Cap">Key Cap - RM1</option>
-                <option value="Screws and Golden nut">Screws and Golden nut - RM1</option>
-                <option value="Switches">Switches - RM0.50</option>
-                <option value="Potential Meter">Potential Meter - RM1</option>
+                <option value="TH practice">TH practice - 8</option>
+                <option value="TH exam">TH exam - 8.50</option>
+                <option value="Circuit">Circuit - 5</option>
+                <option value="Breadboard">Breadboard - 10</option>
+                <option value="SMD practice">SMD practice - 2.50</option>
+                <option value="SMD exam">SMD exam - 3.50</option>
+                <option value="Cutter">Cutter - 10</option>
+                <option value="Plier">Plier - 10</option>
+                <option value="Perf 5x7">Perf 5x7 - 2</option>
+                <option value="Perf 7x9">Perf 7x9 - 3</option>
+                <option value="Exam Pack 2">Exam Pack 2 - 3.50</option>
+                <option value="Log book">Log book - 1.60</option>
+                <option value="Tweezer">Tweezer - 4</option>
+                <option value="Acrylic">Acrylic - 7</option>
+                <option value="Arduino Pro Micro">Arduino Pro Micro - 20</option>
+                <option value="Soldering Lead">Soldering Lead - 3</option>
+                <option value="Keyboard Badge">Keyboard Badge - 8</option>
+                <option value="Resistors">Resistors - 2</option>
+                <option value="Key Cap">Key Cap - 1</option>
+                <option value="Screws and Golden nut">Screws and Golden nut - 1</option>
+                <option value="Switches">Switches - 0.50</option>
+                <option value="Potential Meter">Potential Meter - 1</option>
             </select>
         </div>
         <div class="form-group">
@@ -67,7 +67,7 @@
                     <tbody>
                         <!-- Sales records will appear here -->
                     </tbody>
-                    
+
                 </table>
             </div>
 
@@ -120,20 +120,23 @@
 
         window.addSale = function() {
             const date = document.getElementById('date').value;
-            const item = document.getElementById('item').value;
+            const itemSelect = document.getElementById('item');
+            const item = itemSelect.value;
+            const itemText = itemSelect.options[itemSelect.selectedIndex].text;
+            const price = parseFloat(itemText.split('- ')[1]); // Extracting price directly from option text
             const quantity = parseInt(document.getElementById('quantity').value);
-            const studentNumber = document.getElementById('studentNumber').value;
+            const studentNumber = document.getElementById('studentNumber').value || 'Unknown'; // Default to 'Unknown' if empty
 
-            if (!date || !item || isNaN(quantity) || quantity <= 0 || !studentNumber) {
-                alert('Please select a date, item, valid quantity, and enter a student number.');
+            if (!date || !item || isNaN(quantity) || quantity <= 0) {
+                alert('Please select a date, item, and valid quantity.');
                 return;
             }
 
             const salesRef = ref(database, 'salesRecords');
             const newSaleRef = push(salesRef);
-            set(newSaleRef, { date, item, quantity, studentNumber });
+            set(newSaleRef, { date, item, quantity, studentNumber, price });
 
-            addToShame(studentNumber, item, quantity);
+            addToShame(studentNumber, item, quantity, price);
 
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('date').value = today;
@@ -145,6 +148,7 @@
             displayShame();
         };
 
+
         window.changeQuantity = function(change) {
             const quantityInput = document.getElementById('quantity');
             let quantity = parseInt(quantityInput.value);
@@ -153,8 +157,11 @@
             quantityInput.value = quantity;
         };
 
-        function addToShame(studentNumber, item, quantity) {
+        function addToShame(studentNumber, item, quantity, price) {
+            if (!studentNumber || studentNumber === "Unknown") return; // Skip if no student number
+
             const shameRef = ref(database, 'shameRecords');
+
             onValue(shameRef, (snapshot) => {
                 let recordFound = false;
                 const records = snapshot.val();
@@ -163,17 +170,27 @@
                     Object.entries(records).forEach(([id, record]) => {
                         if (record.studentNumber === studentNumber) {
                             recordFound = true;
-                            const updatedAmount = record.amount + calculateAmount(item, quantity);
+                            const updatedAmount = record.amount + (price * quantity); // Calculate new amount
                             update(ref(database, 'shameRecords/' + id), { amount: updatedAmount });
                         }
                     });
                 }
 
+                // If no existing record for the student, create a new one
                 if (!recordFound) {
                     const newShameRef = push(shameRef);
-                    set(newShameRef, { studentNumber, amount: calculateAmount(item, quantity) });
+                    set(newShameRef, { studentNumber, amount: price * quantity });
                 }
             }, { onlyOnce: true });
+        }
+
+
+        window.manualChangeOwed = function (id) {
+            const newAmount = prompt('Enter the new amount owed:');
+            if (newAmount && !isNaN(newAmount)) {
+                const shameRef = ref(database, 'shameRecords/' + id);
+                update(shameRef, { amount: parseFloat(newAmount) });
+            }
         }
 
         function calculateAmount(item, quantity) {
@@ -189,10 +206,26 @@
             onValue(salesRef, (snapshot) => {
                 const records = snapshot.val();
                 if (records) {
+                    const sortedRecords = Object.entries(records).sort((a, b) => {
+                        const dateA = new Date(a[1].date);
+                        const dateB = new Date(b[1].date);
+                        return dateA - dateB;
+                    });
+
                     let lastDate = ''; // To keep track of the last displayed date
-                    Object.entries(records).forEach(([id, record]) => {
+                    let itemQuantities = {};
+
+                    sortedRecords.forEach(([id, record]) => {
+                        const key = `${record.date}-${record.item}`;
+                        if (itemQuantities[key]) {
+                            itemQuantities[key].quantity += record.quantity;
+                        } else {
+                            itemQuantities[key] = { ...record, id };
+                        }
+                    });
+
+                    Object.values(itemQuantities).forEach(record => {
                         if (record.date !== lastDate) {
-                            // Add a new row for the new date
                             const dateRow = document.createElement('tr');
                             dateRow.className = 'date-row';
                             dateRow.innerHTML = `<td colspan="3">${record.date}</td>`;
@@ -200,14 +233,13 @@
                             lastDate = record.date;
                         }
 
-                        // Add the sale row with `+` and `-` buttons in the "Action" column
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${record.item}</td>
                             <td>${record.quantity}</td>
                             <td>
-                                <button onclick="changeQuantityInTable('${id}', -1)">-</button>
-                                <button onclick="changeQuantityInTable('${id}', 1)">+</button>
+                                <button onclick="changeQuantityInTable('${record.id}', -1)">-</button>
+                                <button onclick="changeQuantityInTable('${record.id}', 1)">+</button>
                             </td>
                         `;
                         salesTableBody.appendChild(row);
@@ -218,16 +250,30 @@
 
 
 
-        window.changeQuantityInTable = function(id, change) {
+
+
+        window.changeQuantityInTable = function (id, change) {
             const salesRef = ref(database, 'salesRecords/' + id);
             onValue(salesRef, (snapshot) => {
                 const record = snapshot.val();
                 let newQuantity = record.quantity + change;
-                if (newQuantity < 1) newQuantity = 1;
-                update(salesRef, { quantity: newQuantity });
+
+                if (newQuantity < 1) {
+                    remove(salesRef);
+                } else {
+                    update(salesRef, { quantity: newQuantity });
+                }
+
                 displaySales();
             }, { onlyOnce: true });
         };
+
+        window.removeFromShame = function(id) {
+            const shameRef = ref(database, 'shameRecords/' + id);
+            remove(shameRef);
+            displayShame(); // Refresh the list after removal
+        };
+
 
         function displayShame() {
             const shameTableBody = document.querySelector('#shameTable tbody');
@@ -238,19 +284,27 @@
                 const records = snapshot.val();
                 if (records) {
                     Object.entries(records).forEach(([id, record]) => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${record.studentNumber}</td>
-                            <td>${record.amount.toFixed(2)}</td>
-                            <td>
-                                <button onclick="removeFromShame('${id}')">Paid</button>
-                            </td>
-                        `;
-                        shameTableBody.appendChild(row);
+                        // Skip entries where student number is "Unknown" or empty
+                        if (record.studentNumber && record.studentNumber !== "Unknown") {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${record.studentNumber}</td>
+                                <td>${record.amount.toFixed(2)}</td>
+                                <td>
+                                    <button onclick="manualChangeOwed('${id}')">Change Owed</button>
+                                    <button onclick="removeFromShame('${id}')">Remove</button> <!-- Added Remove Button -->
+                                </td>
+                            `;
+                            shameTableBody.appendChild(row);
+                        }
                     });
                 }
             });
         }
+
+        displaySales();
+        displayShame();
+
 
         window.removeSale = function(id) {
             const salesRef = ref(database, 'salesRecords/' + id);
